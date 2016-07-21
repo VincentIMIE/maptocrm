@@ -1,5 +1,5 @@
 <?php 
-define('DEBUG', false);
+define('DEBUG', true);
 define('PS_SHOP_PATH','http://www-dev.machineapub.com');
 define('PS_WS_AUTH_KEY', '41BRIMTT1C601WSJ1EHP035TL7SWEZXH');
 
@@ -12,41 +12,38 @@ try
 	$webService = new PrestaShopWebservice(PS_SHOP_PATH, PS_WS_AUTH_KEY, DEBUG);
 	//Création d'un tableau qui va contenir "customers"
 	$opt['resource'] = 'customers';
-	$opt2['resource'] = 'orders';
+	$optOrder['resource'] = 'orders';
 	// Vérification si l'id est définit
 	if (isset($_GET['id']))
 	{
 		$opt['id'] = $_GET['id'];
+		$optOrder['id'] = $_GET['id_customer'];
 
 	}
 
-	$xmlOrder = $webService->get($opt2);
-	$resources3 = $xmlOrder->children()->children()->children();
-
+	//On récupère UN SEUL utilisateur ( en fonction de l'id choisit )
 	$xml = $webService->get($opt);
 	$resources = $xml->children()->children();
-
-	//Récuperer UN seul utilisateur
 	$xml2 = $webService->get(array(
     'resource' => 'customers',
-    'display' => '[id,firstname,lastname,email,company]', //Les informations que l'ont veut obtenir
+    'display' => '[id,id_lang,firstname,lastname,email,company]', //Les informations que l'ont veut obtenir
     'filter[id]' => '['.$resources.']', //Filtrer par id 
     'limit' => 1 // Pour n'avoir qu'un seul résultat
 	));
 	$resources2 = $xml2->children()->children()->children();
     var_dump($xml2);
 
+    $xmlOrder = $webService->get($optOrder);
+    $resourcesOrder = $xmlOrder->children()->children();
+    $xmlOrderTab = $webService->get(array(
+    	'resource' => 'orders',
+    	'display' => '[id,id_customer,total_paid,reference]',
+    	'filter[id]' => '['.$resourcesOrder.']',
+    	'limit' => 1
+    ));
 
-	// Récuperer la/les commande(s) d'un client
-	$xml3 = $webService->get(array(
-    'resource' => 'orders',
-    'display' => '[id_shop,product_name,product_price,total_paid]', //Les informations que l'ont veut obtenir
-    'filter[id]' => '['.$resources3.']', //Filtrer par id 
-    'limit' => 1 // Pour n'avoir qu'un seul résultat
-	));
-	$resourcesOrder = $xml3->children()->children()->children();
-	var_dump($xml3);
-
+    $resourcesOrder2 = $xmlOrderTab->children()->children()->children();
+    var_dump($xmlOrderTab);
 }
 catch (PrestaShopWebServiceExeption $ex)
 {
@@ -74,7 +71,7 @@ if (isset($_GET['id'])){
 }
 echo '<table border="5">';
 //Si $resources est définie, on liste les éléments. Sinon, afficher erreur 
-if (isset($resources) && isset($resources2))
+if (isset($resources))
 {
 	if (!isset($_GET['id']))
 	{
@@ -95,11 +92,10 @@ if (isset($resources) && isset($resources2))
 			echo '<th>'.$key.'</th><td>'.$resource2.'</td>';
 			echo '</tr>';
 		}
-
-		foreach ($resources3 as $key2 => $resource3)
+		foreach ($resourcesOrder as $key2 => $resourceOrder2)
 		{
 			echo '<tr>';
-			echo '<th>'.$key2.'</th><td>'.$resource3.'</td>';
+			echo '<th>'.$key2.'</th><td>'.$resourceOrder2.'</td>';
 			echo '</tr>';
 		}
 	}
