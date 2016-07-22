@@ -11,39 +11,23 @@ try
 	//Création d'une nouvelle instance de PrestaShopWebService
 	$webService = new PrestaShopWebservice(PS_SHOP_PATH, PS_WS_AUTH_KEY, DEBUG);
 	//Création d'un tableau qui va contenir "customers"
-	$opt['resource'] = 'customers';
-	$optOrder['resource'] = 'orders';
+	$opt['resource'] = 'orders';
 	// Vérification si l'id est définit
 	if (isset($_GET['id']))
 	{
-		$opt['id'] = (int)$_GET['id'];
-		$optOrder['id_customer'] = (int)$_GET['id'];
-
+		$opt['id'] = $_GET['id'];
 	}
-	//On récupère UN SEUL utilisateur ( en fonction de l'id choisit )
 	$xml = $webService->get($opt);
-	$resources = $xml->children()->children();
-	$xml2 = $webService->get(array(
-    'resource' => 'customers',
-    'display' => '[id,id_lang,firstname,lastname,email,company]', //Les informations que l'ont veut obtenir
-    'filter[id]' => '['.$resources.']', //Filtrer par id 
-    'limit' => 1 // Pour n'avoir qu'un seul résultat
-	));
-	$resources2 = $xml2->children()->children()->children();
+    $resources = $xml->children()->children();
 
-
-    $xmlOrder = $webService->get($optOrder);
-    $resourcesOrder = $xmlOrder->children()->children();
-    var_dump($resourcesOrder);
-    $xmlOrderTab = $webService->get(array(
+    $xml2 = $webService->get(array(
     	'resource' => 'orders',
     	'display' => '[id,id_customer,total_paid,reference]',
-    	'filter[id]' => '['.$resourcesOrder.']',
-    	'limit' => 1
+    	'filter[id]' => '['.$resources.']'
     ));
 
-    $resourcesOrder2 = $xmlOrderTab->children()->children()->children();
-    var_dump($xmlOrderTab);
+    $resources2 = $xml2->children()->children()->children();
+    var_dump($xml2);
 }
 catch (PrestaShopWebServiceExeption $ex)
 {
@@ -55,7 +39,7 @@ catch (PrestaShopWebServiceExeption $ex)
 	// Affiche un message associé à l’erreur
 }
 
-echo '<h1>Liste des utilisateurs ';
+echo '<h1>Liste des achats ? ';
 if (isset($_GET['id']))
 {
 	echo 'Details';
@@ -92,12 +76,6 @@ if (isset($resources))
 			echo '<th>'.$key.'</th><td>'.$resource2.'</td>';
 			echo '</tr>';
 		}
-		foreach ($resourcesOrder as $key2 => $resourceOrder2)
-		{
-			echo '<tr>';
-			echo '<th>'.$key2.'</th><td>'.$resourceOrder2.'</td>';
-			echo '</tr>';
-		}
 	}
 }
 else
@@ -105,6 +83,5 @@ else
 	echo 'erreur';
 }
 echo '</table>';
-
 
 ?>
