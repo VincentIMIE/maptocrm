@@ -16,11 +16,10 @@ try
 	// Vérification si l'id est définit
 	if (isset($_GET['id']))
 	{
-		$opt['id'] = $_GET['id'];
-		$optOrder['id'] = $_GET['id_customer'];
+		$opt['id'] = (int)$_GET['id'];
+		$optOrder['id_customer'] = (int)$_GET['id'];
 
 	}
-
 	//On récupère UN SEUL utilisateur ( en fonction de l'id choisit )
 	$xml = $webService->get($opt);
 	$resources = $xml->children()->children();
@@ -31,10 +30,11 @@ try
     'limit' => 1 // Pour n'avoir qu'un seul résultat
 	));
 	$resources2 = $xml2->children()->children()->children();
-    var_dump($xml2);
+
 
     $xmlOrder = $webService->get($optOrder);
     $resourcesOrder = $xmlOrder->children()->children();
+    var_dump($resourcesOrder);
     $xmlOrderTab = $webService->get(array(
     	'resource' => 'orders',
     	'display' => '[id,id_customer,total_paid,reference]',
